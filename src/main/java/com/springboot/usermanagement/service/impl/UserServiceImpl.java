@@ -5,11 +5,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.springboot.usermanagement.dto.UserDto;
 import com.springboot.usermanagement.entity.User;
-import com.springboot.usermanagement.mapper.UserMapper;
 import com.springboot.usermanagement.repository.UserRepository;
 import com.springboot.usermanagement.service.UserService;
 
@@ -34,6 +34,8 @@ public class UserServiceImpl implements UserService {
 	 */
 	private UserRepository userRepository;
 
+    private ModelMapper modelMapper;
+
 	/**
 	 * Saves a new user to the database.
 	 * 
@@ -43,11 +45,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDto createUser(UserDto userDto) {
 		// Convert UserDto into User JPA Entity
-		User user = UserMapper.mapToUser(userDto);
+		User user = modelMapper.map(userDto, User.class);
 		// Save the user to the database using Spring Data JPA
 		User savedUser = userRepository.save(user);
 		// Convert User Entity to UserDto
-		return UserMapper.mapToUserDto(savedUser);
+		return modelMapper.map(savedUser, UserDto.class);
 	}
 
 	/**
@@ -64,9 +66,7 @@ public class UserServiceImpl implements UserService {
 
 		// Use get() to extract the actual User from Optional
 		// (Note: this throws NoSuchElementException if user is not found)
-		return UserMapper.mapToUserDto(
-				user.orElseThrow(() -> new IllegalStateException("User not found"))
-				);
+		return modelMapper.map(user, UserDto.class);
 	}
 
 	/**
@@ -79,9 +79,8 @@ public class UserServiceImpl implements UserService {
 		// Fetch all users from the database using Spring Data JPA
 		List<User> allUsers = userRepository.findAll();
 		
-		return allUsers.stream()
-				.map(UserMapper::mapToUserDto)
-				.collect(Collectors.toList());
+		return allUsers.stream().map((user) -> modelMapper.map(user, UserDto.class))
+              .collect(Collectors.toList());
 	}
 
 	/**
@@ -108,7 +107,7 @@ public class UserServiceImpl implements UserService {
 		// save() is used for both creating and updating in Spring Data JPA.
 		
 		
-		return UserMapper.mapToUserDto(userRepository.save(existingUser));
+		return modelMapper.map(userRepository.save(existingUser), UserDto.class);
 	}
 
 	/**
