@@ -1,7 +1,8 @@
 package com.springboot.usermanagement.service;
 
 import java.util.List;
-import com.springboot.usermanagement.entity.User;
+
+import com.springboot.usermanagement.dto.UserDto;
 
 /**
  * UserService defines a contract for user-related business operations.
@@ -23,7 +24,7 @@ public interface UserService {
      * @param user The user data to be saved.
      * @return The saved user object including the generated ID.
      */
-    User createUser(User user);
+    UserDto createUser(UserDto userDto);
 
     /**
      * Retrieves a user by their unique ID.
@@ -31,14 +32,14 @@ public interface UserService {
      * @param id The ID of the user to be fetched.
      * @return The user object if found.
      */
-    User getUserById(Long id);
+    UserDto getUserById(Long id);
 
     /**
      * Retrieves a list of all users.
      *
      * @return A list of all user objects from the database.
      */
-    List<User> getAllUsers();
+    List<UserDto> getAllUsers();
 
     /**
      * Updates an existing user's information.
@@ -46,7 +47,7 @@ public interface UserService {
      * @param user A user object with updated details. The user must already exist.
      * @return The updated user object.
      */
-    User updateUser(User user);
+    UserDto updateUser(UserDto userDto);
 
     /**
      * Deletes a user from the system using their ID.
