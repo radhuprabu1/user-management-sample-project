@@ -3,13 +3,12 @@ package com.springboot.usermanagement.service.impl;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.springboot.usermanagement.dto.UserDto;
 import com.springboot.usermanagement.entity.User;
-import com.springboot.usermanagement.mapper.UserMapper;
+import com.springboot.usermanagement.mapper.AutoUserMapper;
 import com.springboot.usermanagement.repository.UserRepository;
 import com.springboot.usermanagement.service.UserService;
 
@@ -43,11 +42,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDto createUser(UserDto userDto) {
 		// Convert UserDto into User JPA Entity
-		User user = UserMapper.mapToUser(userDto);
+        User user = AutoUserMapper.MAPPER.mapToUser(userDto);
 		// Save the user to the database using Spring Data JPA
 		User savedUser = userRepository.save(user);
 		// Convert User Entity to UserDto
-		return UserMapper.mapToUserDto(savedUser);
+		return AutoUserMapper.MAPPER.mapToUserDto(savedUser);
 	}
 
 	/**
@@ -64,9 +63,9 @@ public class UserServiceImpl implements UserService {
 
 		// Use get() to extract the actual User from Optional
 		// (Note: this throws NoSuchElementException if user is not found)
-		return UserMapper.mapToUserDto(
-				user.orElseThrow(() -> new IllegalStateException("User not found"))
-				);
+        return AutoUserMapper.MAPPER.mapToUserDto(
+        		user.orElseThrow(() -> new NoSuchElementException("User not found"))
+        		);
 	}
 
 	/**
@@ -79,9 +78,9 @@ public class UserServiceImpl implements UserService {
 		// Fetch all users from the database using Spring Data JPA
 		List<User> allUsers = userRepository.findAll();
 		
-		return allUsers.stream()
-				.map(UserMapper::mapToUserDto)
-				.collect(Collectors.toList());
+		return allUsers.stream().map(
+				AutoUserMapper.MAPPER::mapToUserDto)
+                .toList();
 	}
 
 	/**
@@ -97,7 +96,7 @@ public class UserServiceImpl implements UserService {
 		// Retrieve the existing user from the database using the provided ID
 		User existingUser = userRepository.findById(userDto.getId())
 				.orElseThrow(() -> 
-				new IllegalStateException("User not found"));
+				new NoSuchElementException("User not found"));
 
 		// Update the existing user's fields with new values
 		existingUser.setEmail(userDto.getEmail());
@@ -108,7 +107,7 @@ public class UserServiceImpl implements UserService {
 		// save() is used for both creating and updating in Spring Data JPA.
 		
 		
-		return UserMapper.mapToUserDto(userRepository.save(existingUser));
+		return AutoUserMapper.MAPPER.mapToUserDto(userRepository.save(existingUser));
 	}
 
 	/**
