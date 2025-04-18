@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.springboot.usermanagement.entity.User;
+import com.springboot.usermanagement.dto.UserDto;
 import com.springboot.usermanagement.service.UserService;
 
 import lombok.AllArgsConstructor;
@@ -44,13 +44,13 @@ public class UserController {
 	/**
 	 * Create a new user.
 	 * RequestBody - binds incoming request data to method parameters.
-	 * @param user The user object sent in the request body (in JSON format).
-	 * @return ResponseEntity containing the saved user and HTTP status code 201 (Created).
+	 * @param userDto The userDto object sent in the request body (in JSON format).
+	 * @return ResponseEntity containing the saved userDto and HTTP status code 201 (Created).
 	 */
 	@PostMapping
-	public ResponseEntity<User> createUser(@RequestBody User user) {
+	public ResponseEntity<UserDto> createUser(@RequestBody UserDto user) {
 		// Call the service layer to save the user to the database
-		User savedUser = userService.createUser(user);
+		UserDto savedUser = userService.createUser(user);
 		// Return the saved user along with a 201 Created response
 		return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
 	}
@@ -64,9 +64,9 @@ public class UserController {
 	 * @return ResponseEntity containing the user (if found) and HTTP status code 200 (OK).
 	 */
 	@GetMapping("{id}")
-	public ResponseEntity<User> getUserById(@PathVariable("id") Long userId) {
+	public ResponseEntity<UserDto> getUserById(@PathVariable("id") Long userId) {
 		// Get the user with the given ID from the service layer
-		User getUser = userService.getUserById(userId);
+		UserDto getUser = userService.getUserById(userId);
 		// Return the user along with a 200 OK response
 		return new ResponseEntity<>(getUser, HttpStatus.OK);
 	}
@@ -79,9 +79,9 @@ public class UserController {
 	 * @return ResponseEntity containing the list of all users and HTTP status code 200 (OK).
 	 */
 	@GetMapping
-	public ResponseEntity<List<User>> getAllUsers() {
+	public ResponseEntity<List<UserDto>> getAllUsers() {
 		// Fetch the list of all users from the service layer
-		List<User> getUsers = userService.getAllUsers();
+		List<UserDto> getUsers = userService.getAllUsers();
 		// Return the list along with a 200 OK response
 		return new ResponseEntity<>(getUsers, HttpStatus.OK);
 	}
@@ -96,12 +96,12 @@ public class UserController {
 	 * @return ResponseEntity containing the updated user and HTTP status code 200 (OK).
 	 */
 	@PutMapping("{id}")
-	public ResponseEntity<User> updateUser(@PathVariable("id") Long userId,
-			@RequestBody User user) {
+	public ResponseEntity<UserDto> updateUser(@PathVariable("id") Long userId,
+			@RequestBody UserDto userDto) {
 		// Set the user ID in the incoming user object
-		user.setId(userId);
+		userDto.setId(userId);
 		// Call the service layer to update the user in the database
-		User updatedUser = userService.updateUser(user);
+		UserDto updatedUser = userService.updateUser(userDto);
 		// Return the updated user along with a 200 OK response
 		return new ResponseEntity<>(updatedUser, HttpStatus.OK);
 	}
