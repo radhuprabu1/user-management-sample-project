@@ -1,7 +1,10 @@
 package com.springboot.usermanagement.repository;
 
-import com.springboot.usermanagement.entity.User;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.springboot.usermanagement.entity.User;
 
 /**
  * UserRepository is a Data Access Layer interface that handles
@@ -21,4 +24,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
+	/**
+	 * Custom method to find a user by their email address.
+	 * Spring will generate the query based on the method name.
+	 *
+	 * @param email The email address of the user to find.
+	 * @return An Optional containing the user if found, otherwise an empty Optional.
+	 */
+	Optional<User> findByEmail(String email);
 }

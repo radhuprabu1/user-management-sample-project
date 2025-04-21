@@ -5,6 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * UserDto is a Data Transfer Object (DTO) used to transfer user data
+ * between the client and the server.
+ * 
+ * It contains only the essential fields required for creating,
+ * reading, updating, or deleting user information without exposing
+ * internal entities directly.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

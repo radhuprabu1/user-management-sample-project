@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.springboot.usermanagement.dto.UserDto;
 import com.springboot.usermanagement.entity.User;
+import com.springboot.usermanagement.exception.EmailAlreadyExistsException;
+import com.springboot.usermanagement.exception.ResourceNotFoundException;
 import com.springboot.usermanagement.mapper.UserMapper;
 import com.springboot.usermanagement.repository.UserRepository;
 import com.springboot.usermanagement.service.UserService;
@@ -16,69 +18,78 @@ import com.springboot.usermanagement.service.UserService;
 import lombok.AllArgsConstructor;
 
 /**
- * Implementation of the {@link UserService} interface.
+ * {@code UserServiceImpl} is a service class that provides the implementation
+ * of the {@link UserService} interface.
  * 
- * This class handles the business logic for managing users,
- * including creating, retrieving, updating, and deleting user records.
+ * <p>This class contains business logic to manage user-related operations:
+ * creating a new user, retrieving users (by ID or all), updating user details,
+ * and deleting users.</p>
  * 
- * It uses {@link UserRepository} to perform database operations.
- * Service Annotation makes this class a Spring-managed service component.
- * AllArgsConstructor Annotation from Lombok automatically generates a constructor that initializes the userRepository.
+ * <p>It interacts with the database using {@link UserRepository}, and maps
+ * between DTOs and Entities using {@link UserMapper}.</p>
  */
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
 	/**
-	 * Repository interface to interact with the database for User entity operations.
+	 * Repository for interacting with the User table in the database.
 	 */
 	private UserRepository userRepository;
 
 	/**
-	 * Saves a new user to the database.
-	 * 
-	 * @param user The user object to be saved.
-	 * @return The saved user with a generated ID and other persisted information.
+	 * Creates a new user after checking if the email already exists.
+	 *
+	 * @param userDto The data transfer object containing user details.
+	 * @return The saved user's details as a UserDto.
+	 * @throws EmailAlreadyExistsException if a user with the same email already exists.
 	 */
 	@Override
 	public UserDto createUser(UserDto userDto) {
-		// Convert UserDto into User JPA Entity
+		// Check if a user with the given email already exists
+		Optional<User> newUser = userRepository.findByEmail(userDto.getEmail());
+		if (newUser.isPresent()) {
+			throw new EmailAlreadyExistsException("Email Already Exists for another user");
+		}
+
+		// Convert DTO to Entity object to store in DB
 		User user = UserMapper.mapToUser(userDto);
-		// Save the user to the database using Spring Data JPA
+
+		// Save the user and get the saved entity with ID
 		User savedUser = userRepository.save(user);
-		// Convert User Entity to UserDto
+
+		// Convert saved entity back to DTO to return
 		return UserMapper.mapToUserDto(savedUser);
 	}
 
 	/**
-	 * Retrieves a user by their ID.
-	 * 
-	 * @param userId The ID of the user to be retrieved.
-	 * @return The User object if found, otherwise throws NoSuchElementException.
+	 * Retrieves a user by their unique ID.
+	 *
+	 * @param userId The ID of the user to retrieve.
+	 * @return The user's details as a UserDto.
+	 * @throws ResourceNotFoundException if the user does not exist.
 	 */
 	@Override
 	public UserDto getUserById(Long userId) throws NoSuchElementException {
-		
-		// Find the user by ID; result is wrapped in Optional to avoid null
-		Optional<User> user = userRepository.findById(userId);
+		// Try to find the user by ID, or throw custom exception if not found
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-		// Use get() to extract the actual User from Optional
-		// (Note: this throws NoSuchElementException if user is not found)
-		return UserMapper.mapToUserDto(
-				user.orElseThrow(() -> new IllegalStateException("User not found"))
-				);
+		// Convert the found entity into DTO for response
+		return UserMapper.mapToUserDto(user);
 	}
 
 	/**
-	 * Retrieves a list of all users from the database.
-	 * 
-	 * @return A list of User objects.
+	 * Retrieves all users from the database.
+	 *
+	 * @return A list of UserDto objects containing all user details.
 	 */
 	@Override
 	public List<UserDto> getAllUsers() {
-		// Fetch all users from the database using Spring Data JPA
+		// Fetch all user entities from the database
 		List<User> allUsers = userRepository.findAll();
-		
+
+		// Convert each entity into DTO using streams and return
 		return allUsers.stream()
 				.map(UserMapper::mapToUserDto)
 				.collect(Collectors.toList());
@@ -86,39 +97,43 @@ public class UserServiceImpl implements UserService {
 
 	/**
 	 * Updates an existing user's details.
-	 * 
-	 * @param user A User object containing the updated data.
-	 *             The user must already exist in the database.
-	 * @return The updated User object after saving.
+	 *
+	 * @param userDto A DTO containing updated user details.
+	 *                The user ID must be present and valid.
+	 * @return The updated user details as a UserDto.
+	 * @throws ResourceNotFoundException if the user does not exist.
 	 */
 	@Override
 	public UserDto updateUser(UserDto userDto) {
-		
-		// Retrieve the existing user from the database using the provided ID
+		// Find the user to update; if not found, throw exception
 		User existingUser = userRepository.findById(userDto.getId())
-				.orElseThrow(() -> 
-				new IllegalStateException("User not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("User", "id", userDto.getId()));
 
-		// Update the existing user's fields with new values
+		// Set new values into the existing entity
 		existingUser.setEmail(userDto.getEmail());
 		existingUser.setFirstName(userDto.getFirstName());
 		existingUser.setLastName(userDto.getLastName());
 
-		// Save the updated user back to the database
-		// save() is used for both creating and updating in Spring Data JPA.
-		
-		
-		return UserMapper.mapToUserDto(userRepository.save(existingUser));
+		// Save the updated entity
+		User updatedUser = userRepository.save(existingUser);
+
+		// Convert the updated entity back to DTO
+		return UserMapper.mapToUserDto(updatedUser);
 	}
 
 	/**
-	 * Deletes a user from the database by their ID.
-	 * 
+	 * Deletes a user from the database using their ID.
+	 *
 	 * @param userId The ID of the user to delete.
+	 * @throws ResourceNotFoundException if the user with the given ID does not exist.
 	 */
 	@Override
 	public void deleteUser(Long userId) {
-		// Delete the user by their ID using Spring Data JPA
+		// Check if the user exists before deleting
+		userRepository.findById(userId).orElseThrow(
+				() -> new ResourceNotFoundException("User", "id", userId));
+
+		// Delete the user by ID
 		userRepository.deleteById(userId);
 	}
 }

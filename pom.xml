@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.springboot.restfulwebservices</groupId>
 	<artifactId>springboot-user-management-project-sample</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>springboot-user-management-project-sample</name>
 	<description>Demo Project for Spring Boot RESTful Webservices</description>
 	<url/>
