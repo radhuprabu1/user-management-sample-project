@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,9 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springboot.usermanagement.dto.UserDto;
 import com.springboot.usermanagement.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 /**
@@ -30,7 +32,7 @@ import lombok.AllArgsConstructor;
  *
  * All endpoints are prefixed with "/api/users".
  */
-@Controller
+@RestController
 /**
  * @Controller: Marks this class as a Spring MVC controller.
  * It tells Spring to scan this class for request handling methods.
@@ -59,7 +61,7 @@ public class UserController {
      * @PostMapping: Maps this method to handle HTTP POST requests.
      * Used when creating a new resource.
      */
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto user) {
+    public ResponseEntity<UserDto> createUser(@RequestBody @Valid UserDto user) {
         // Save the user using service logic
         UserDto savedUser = userService.createUser(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
@@ -110,7 +112,7 @@ public class UserController {
      * Used for updating an existing user.
      */
     public ResponseEntity<UserDto> updateUser(@PathVariable("id") Long userId,
-                                              @RequestBody UserDto userDto) {
+                                              @RequestBody @Valid UserDto userDto) {
         userDto.setId(userId);
         UserDto updatedUser = userService.updateUser(userDto);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
